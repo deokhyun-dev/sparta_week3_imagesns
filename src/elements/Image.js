@@ -1,26 +1,57 @@
-import React from "react";
 import styled from "styled-components";
+import React from "react";
 
-const Image = () => {
+const Image = props => {
     const { shape, src, size } = props;
-    return <ImageCircle></ImageCircle>;
+
+    const styles = {
+        src: src,
+        size: size,
+    };
+
+    if (shape === "circle") {
+        return <ImageCircle {...styles}></ImageCircle>;
+    }
+
+    if (shape === "rectangle") {
+        return (
+            <AspectOutter>
+                <AspectInner {...styles}></AspectInner>
+            </AspectOutter>
+        );
+    }
+
+    return <React.Fragment></React.Fragment>;
 };
 
 Image.defaultProps = {
     shape: "circle",
-    src: "https://ww.namu.la/s/389112384038ef47074671145a3137bc8b1e3a1bc954e269479d6e3bd06715f3df1c6aac8890dfbbac082e7b31313c9f7ef4703bafaf3165c10f306d98835f7011489c59011c8a448cc9e575bdbcabdc7a2fe206ec89698e290b8def736e65ea",
+    src: "https://www.007.com/wp-content/uploads/2020/05/B25_11846_RC.jpg",
     size: 36,
 };
 
-//background-cover: 공간에 맞게 사이즈 조절
+const AspectOutter = styled.div`
+    width: 100%;
+    min-width: 250px;
+`;
+
+const AspectInner = styled.div`
+    position: relative;
+    padding-top: 75%;
+    overflow: hidden;
+    background-image: url("${props => props.src}");
+    background-size: cover;
+`;
 
 const ImageCircle = styled.div`
     --size: ${props => props.size}px;
     width: var(--size);
     height: var(--size);
     border-radius: var(--size);
+
     background-image: url("${props => props.src}");
     background-size: cover;
+    margin: 4px;
 `;
 
 export default Image;

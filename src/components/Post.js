@@ -1,31 +1,50 @@
 import React from "react";
-import Grid from "../elements/Grid";
+// import Grid from "../elements/Grid";
+// import Image from "../elements/Image";
+// import Text from "../elements/Text";
 
-function Post() {
+import { Grid, Image, Text } from "../elements";
+
+const Post = props => {
     return (
-        <>
-            <Grid padding="16px">
-                <div>user profile / user name / insert-dt /is_me (edit)</div>
-                <div>contents</div>
-                <div>image</div>
-                <div>comment cnt</div>
+        <React.Fragment>
+            <Grid>
+                <Grid is_flex padding="16px">
+                    <Grid is_flex width="auto">
+                        <Image shape="circle" src={props.src} />
+                        <Text bold>{props.user_info.user_name}</Text>
+                    </Grid>
+                    <Grid is_flex width="auto">
+                        <Text>{props.insert_dt}</Text>
+                    </Grid>
+                </Grid>
+                <Grid padding="16px">
+                    <Text>{props.contents}</Text>
+                </Grid>
+                <Grid>
+                    <Image shape="rectangle" src={props.src} />
+                </Grid>
+                <Grid padding="16px">
+                    <Text margin="0px" bold>
+                        댓글 {props.comment_cnt}개
+                    </Text>
+                </Grid>
             </Grid>
-        </>
+        </React.Fragment>
     );
-}
+};
 
-// props를 잘못가져왔을 때 기본값으로 정해놓음
 Post.defaultProps = {
     user_info: {
-        user_name: "duck",
+        user_name: "다니엘",
         user_profile:
-            "https://ww.namu.la/s/389112384038ef47074671145a3137bc8b1e3a1bc954e269479d6e3bd06715f3df1c6aac8890dfbbac082e7b31313c9f7ef4703bafaf3165c10f306d98835f7011489c59011c8a448cc9e575bdbcabdc7a2fe206ec89698e290b8def736e65ea",
+            "https://www.007.com/wp-content/uploads/2020/05/B25_11846_RC.jpg",
     },
     image_url:
-        "https://ww.namu.la/s/389112384038ef47074671145a3137bc8b1e3a1bc954e269479d6e3bd06715f3df1c6aac8890dfbbac082e7b31313c9f7ef4703bafaf3165c10f306d98835f7011489c59011c8a448cc9e575bdbcabdc7a2fe206ec89698e290b8def736e65ea",
-    content: "레서판다네요",
+        "https://www.007.com/wp-content/uploads/2020/05/B25_11846_RC.jpg",
+    contents: "노타임투다이",
     comment_cnt: 10,
-    insert_dt: "2021-09_30 00:00:00",
+    insert_dt: "2021-02-27 10:00:00",
 };
 
 export default Post;
