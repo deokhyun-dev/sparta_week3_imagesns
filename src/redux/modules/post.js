@@ -103,63 +103,124 @@ const editPostFB = (post_id = null, post = {}) => {
         const _post = getState().post.list[_post_idx];
 
         const postDB = firestore.collection("post");
-        postDB
-            .doc(post_id)
-            .update(post)
-            .then(doc => {
-                dispatch(editPost(post_id, { ...post }));
-                history.replace("/");
+
+        if (_image === _post.image_url) {
+            postDB
+                .doc(post_id)
+                .update(post)
+                .then(doc => {
+                    dispatch(editPost(post_id, { ...post }));
+                    history.replace("/");
+                });
+        } else {
+            const user_id = getState().user.user.uid;
+            const _upload = storage
+                .ref(`images/${user_id}_${new Date().getTime()}`)
+                .putString(_image, "data_url");
+
+            _upload.then(snapshot => {
+                snapshot.ref
+                    .getDownloadURL()
+                    .then(url => {
+                        console.log(url);
+                        return url;
+                    })
+                    .then(url => {
+                        postDB
+                            .doc(post_id)
+                            .update({ ...post, image_url: url })
+                            .then(doc => {
+                                dispatch(
+                                    editPost(post_id, {
+                                        ...post,
+                                        image_url: url,
+                                    })
+                                );
+                                history.replace("/");
+                            });
+                    })
+                    .catch(err => {
+                        window.alert("이미지 업로드 잣됨");
+                        console.log("이미지 업로드 잣됨", err);
+                    });
             });
+        }
     };
 };
 
 const getPostFB = () => {
     return function (dispatch, getState, { history }) {
         const postDB = firestore.collection("post");
-        let post_list = [];
 
-        postDB.get().then(docs => {
+        let query = postDB.orderBy("insert_dt", "desc").limit(2);
+        let post_list = [];
+        query.get().then(docs => {
             docs.forEach(doc => {
                 let _post = doc.data();
 
-                // JS고수의 방법
-                let post = Object.keys(_post).reduce(
-                    (acc, cur) => {
-                        if (cur.indexOf("user") !== -1) {
-                            return {
-                                ...acc,
-                                user_info: {
-                                    ...acc.user_info,
-                                    [cur]: _post[cur],
-                                },
-                            };
-                        }
-
-                        return { ...acc, [cur]: _post[cur] };
-                    },
-                    { id: doc.id, user_info: {} }
-                );
-                // ㄴ z키값들이 배열로 들어감
-
-                // let post = {
-                //     id: doc.id,
-                //     user_info: {
-                //         user_name: _post.user_name,
-                //         user_profile: _post.user_profile,
-                //         user_id: _post.user_id,
-                //     },
-                //     image_url: _post.image_url,
-                //     contents: _post.contents,
-                //     comment_cnt: _post.comment_cnt,
-                //     insert_dt: _post.insert_dt,
-                // };
+                let post = Object.keys(_post).reduce((acc, cur) => {
+                    if (cur.indexOf("user") !== -1) {
+                        return {
+                            ...acc,
+                            user_info: {
+                                ...acc.user_info,
+                                [cur]: _post[cur],
+                            },
+                        };
+                    }
+                    return { ...acc, [cur]: _post[cur] };
+                });
                 post_list.push(post);
             });
-
             dispatch(setPost(post_list));
         });
     };
 };
+
+//         let post_list = [];
+
+//         postDB.get().then(docs => {
+//             docs.forEach(doc => {
+//                 let _post = doc.data();
+
+//                 // JS고수의 방법
+//                 let post = Object.keys(_post).reduce(
+//                     (acc, cur) => {
+//                         if (cur.indexOf("user") !== -1) {
+//                             return {
+//                                 ...acc,
+//                                 user_info: {
+//                                     ...acc.user_info,
+//                                     [cur]: _post[cur],
+//                                 },
+//                             };
+//                         }
+
+//                         return { ...acc, [cur]: _post[cur] };
+//                     },
+//                     { id: doc.id, user_info: {} }
+//                 );
+//                 // ㄴ z키값들이 배열로 들어감
+
+//                 // let post = {
+//                 //     id: doc.id,
+//                 //     user_info: {
+//                 //         user_name: _post.user_name,
+//                 //         user_profile: _post.user_profile,
+//                 //         user_id: _post.user_id,
+//                 //     },
+//                 //     image_url: _post.image_url,
+//                 //     contents: _post.contents,
+//                 //     comment_cnt: _post.comment_cnt,
+//                 //     insert_dt: _post.insert_dt,
+//                 // };
+//                 post_list.push(post);
+//             });
+
+//             dispatch(setPost(post_list));
+//         });
+//     };
+// };
 
 export default handleActions(
     {
@@ -190,6 +251,7 @@ export default handleActions(
 const actionCreators = {
     setPost,
     addPost,
+    editPost,
     getPostFB,
     addPostFB,
     editPostFB,
