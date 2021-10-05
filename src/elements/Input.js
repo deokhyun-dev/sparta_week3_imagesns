@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { Text, Grid } from "./index";
 
 const Input = props => {
-    const { label, placeholder, _onChange, type, multiLine } = props;
+    const { label, placeholder, _onChange, type, multiLine, value } = props;
 
     if (multiLine) {
         return (
@@ -14,6 +14,7 @@ const Input = props => {
                     rows={10}
                     placeholder={placeholder}
                     onChange={_onChange}
+                    value={value}
                 ></ElTextarea>
             </Grid>
         );
@@ -27,6 +28,7 @@ const Input = props => {
                     type={type}
                     placeholder={placeholder}
                     onChange={_onChange}
+                    value={value}
                 />
             </Grid>
         </React.Fragment>

@@ -2,15 +2,7 @@ import { createAction, handleActions } from "redux-actions";
 import { produce } from "immer";
 import { setCookie, getCookie, deleteCookie } from "../../shared/Cookie";
 import { auth } from "../../shared/firebase";
-import {
-    createUserWithEmailAndPassword,
-    updateProfile,
-    signInWithEmailAndPassword,
-    setPersistence,
-    browserSessionPersistence,
-    onAuthStateChanged,
-    signOut,
-} from "firebase/auth";
+import firebase from "firebase/app";
 
 // 리덕스 만드는 순서
 // 1. 액션타입만들기
@@ -43,10 +35,12 @@ const initialState = {
 // middleware actions
 const loginFB = (id, pwd) => {
     return function (dispatch, getState, { history }) {
-        setPersistence(auth, browserSessionPersistence)
-            .then(res => {
-                signInWithEmailAndPassword(auth, id, pwd)
+        auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).then(
+            res => {
+                auth.signInWithEmailAndPassword(id, pwd)
                     .then(user => {
+                        console.log(user);
+
                         dispatch(
                             setUser({
                                 user_name: user.user.displayName,
@@ -55,38 +49,32 @@ const loginFB = (id, pwd) => {
                                 uid: user.user.uid,
                             })
                         );
+
                         history.push("/");
                     })
                     .catch(error => {
-                        const errorCode = error.code;
-                        const errorMessage = error.message;
+                        var errorCode = error.code;
+                        var errorMessage = error.message;
+
                         console.log(errorCode, errorMessage);
                     });
-            })
-            .catch(error => {
-                const errorCode = error.code;
-                const errorMessage = error.message;
-                console.log(errorCode, errorMessage);
-            });
+            }
+        );
     };
 };
 
 const loginCheckFB = () => {
     return function (dispatch, getState, { history }) {
-        onAuthStateChanged(auth, user => {
+        auth.onAuthStateChanged(user => {
             if (user) {
                 dispatch(
                     setUser({
                         user_name: user.displayName,
-                        id: user.email,
                         user_profile: "",
+                        id: user.email,
                         uid: user.uid,
                     })
                 );
-                // User is signed in, see docs for a list of available properties
-                // https://firebase.google.com/docs/reference/js/firebase.User
-                const uid = user.uid;
-                // ...
             } else {
                 dispatch(logOut());
             }
@@ -96,26 +84,21 @@ const loginCheckFB = () => {
 
 const logoutFB = () => {
     return function (dispatch, getState, { history }) {
-        signOut(auth)
-            .then(() => {
-                dispatch(logOut());
-                // replace하면 뒤로가기 안됨
-                history.replace("/");
-                console.log("로그아웃됨");
-            })
-            .catch(error => {
-                console.log(error);
-            });
+        auth.signOut().then(() => {
+            dispatch(logOut());
+            history.replace("/");
+        });
     };
 };
 
 const signupFB = (id, pwd, user_name) => {
     return function (dispatch, getState, { history }) {
-        createUserWithEmailAndPassword(auth, id, pwd)
+        auth.createUserWithEmailAndPassword(id, pwd)
             .then(user => {
-                updateProfile(auth.currentUser, {
-                    displayName: user_name,
-                })
+                auth.currentUser
+                    .updateProfile({
+                        displayName: user_name,
+                    })
                     .then(() => {
                         dispatch(
                             setUser({
