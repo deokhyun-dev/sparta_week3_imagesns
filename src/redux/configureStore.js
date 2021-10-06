@@ -7,6 +7,7 @@ import User from "./modules/user";
 import Post from "./modules/post";
 import Image from "./modules/image";
 import Comment from "./modules/comment";
+import Like from "./modules/like";
 
 // combineReducers()를 사용해서 export한 reducer를 모아 root reducer 만들고
 // 미들웨어 적용해주고
@@ -20,6 +21,7 @@ const rootReducer = combineReducers({
     post: Post,
     image: Image,
     comment: Comment,
+    like: Like,
     router: connectRouter(history),
 });
 

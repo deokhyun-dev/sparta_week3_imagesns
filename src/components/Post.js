@@ -1,13 +1,33 @@
-import React from "react";
+import React, { useState } from "react";
 // import Grid from "../elements/Grid";
 // import Image from "../elements/Image";
 // import Text from "../elements/Text";
 
 import { Grid, Image, Text, Button } from "../elements";
 import { history } from "../redux/configureStore";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { actionCreators as likeActions } from "../redux/modules/like";
+import { actionCreators as postActions } from "../redux/modules/post";
+import { Favorite, FavoriteBorder } from "@mui/icons-material";
 
 const Post = props => {
+    const post_id = props.id;
+    const dispatch = useDispatch();
+    const post_list = useSelector(state => state.post.list);
+    const user_info = useSelector(state => state.user.user);
+    const likeMemberList = post_list.filter(p => p.id === post_id)[0].good_user;
+
+    const likedOrNot =
+        likeMemberList.indexOf(user_info.uid) === -1 ? false : true;
+
+    const [liked, setLiked] = useState(likedOrNot);
+
+    const likeUnlike = () => {
+        setLiked(!liked);
+        likedOrNot
+            ? dispatch(postActions.setUnlikeFB(post_id))
+            : dispatch(postActions.setLikeFB(post_id));
+    };
     return (
         <React.Fragment>
             <Grid margin="0px 0px 10px 0px">
@@ -38,10 +58,16 @@ const Post = props => {
                 <Grid>
                     <Image shape="rectangle" src={props.image_url} />
                 </Grid>
-                <Grid padding="16px">
-                    <Text margin="0px" bold>
+                <Grid padding="16px" is_flex>
+                    <Text margin="0px 5px 0px 0px" bold>
                         댓글 {props.comment_cnt}개
                     </Text>
+
+                    {liked ? (
+                        <Favorite onClick={likeUnlike} />
+                    ) : (
+                        <FavoriteBorder onClick={likeUnlike} />
+                    )}
                 </Grid>
             </Grid>
         </React.Fragment>

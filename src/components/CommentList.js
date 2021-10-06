@@ -9,8 +9,6 @@ const CommentList = props => {
     const { post_id } = props;
     const comment_list = useSelector(state => state.comment.list);
 
-    console.log(comment_list[post_id], "커맨트디테일");
-
     // dispatch(commentActions.setCommentFB(id));
 
     useEffect(() => {

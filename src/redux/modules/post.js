@@ -37,7 +37,9 @@ const initialPost = {
         "https://www.007.com/wp-content/uploads/2020/05/B25_11846_RC.jpg",
     contents: "노타임투다이",
     comment_cnt: 0,
+    like_cnt: 0,
     insert_dt: moment().format("YYYY-MM-DD hh:mm:ss"),
+    good_user: [],
 };
 
 const addPostFB = (contents = "") => {
@@ -155,7 +157,7 @@ const editPostFB = (post_id = null, post = {}) => {
     };
 };
 
-const getPostFB = (start = null, size = 2) => {
+const getPostFB = (start = null, size = 3) => {
     return function (dispatch, getState, { history }) {
         // state에서 페이징 정보 가져오기
         let _paging = getState().post.paging;
@@ -270,7 +272,7 @@ const getPostFB = (start = null, size = 2) => {
                 // 마지막 하나는 빼줍니다.
                 // 그래야 size대로 리스트가 추가되니까요!
                 // 마지막 데이터는 다음 페이지의 유무를 알려주기 위한 친구일 뿐! 리스트에 들어가지 않아요!
-                post_list.pop();
+                // post_list.pop();
 
                 dispatch(setPost(post_list, paging));
             });
@@ -306,6 +308,57 @@ const getOnePostFB = id => {
                     { id: doc.id, user_info: {} }
                 );
                 dispatch(setPost([post], { start: null, next: null, size: 3 }));
+            });
+    };
+};
+
+const setLikeFB = post_id => {
+    return function (dispatch, getState, { history }) {
+        const _post_idx = getState().post.list.findIndex(p => p.id === post_id);
+        const _post = getState().post.list[_post_idx];
+
+        const user_info = getState().user.user;
+
+        const post = {
+            ..._post,
+            good_user: [..._post.good_user, user_info.uid],
+        };
+
+        console.log(post.good_user, "멤버 들어감");
+
+        const postDB = firestore.collection("post");
+
+        postDB
+            .doc(post_id)
+            .update(post)
+            .then(doc => {
+                dispatch(editPost(post_id, { ...post }));
+            });
+    };
+};
+
+const setUnlikeFB = post_id => {
+    return function (dispatch, getState, { history }) {
+        const _post_idx = getState().post.list.findIndex(p => p.id === post_id);
+        const _post = getState().post.list[_post_idx];
+
+        const user_info = getState().user.user;
+        console.log(user_info.uid, "유저아이디");
+        console.log(_post.good_user, "멤버 빠지기 전");
+
+        const post = {
+            ..._post,
+            good_user: _post.good_user.filter(u => u !== user_info.uid),
+        };
+        console.log(post.good_user, "멤버가 빠지나 보자");
+
+        const postDB = firestore.collection("post");
+
+        postDB
+            .doc(post_id)
+            .update(post)
+            .then(doc => {
+                dispatch(editPost(post_id, { ...post }));
             });
     };
 };
@@ -366,6 +419,8 @@ const actionCreators = {
     addPostFB,
     editPostFB,
     getOnePostFB,
+    setLikeFB,
+    setUnlikeFB,
 };
 
 export { actionCreators };
