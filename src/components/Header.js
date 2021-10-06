@@ -5,7 +5,6 @@ import { actionCreators as userActions } from "../redux/modules/user";
 import { Grid, Text, Button } from "../elements";
 import { history } from "../redux/configureStore";
 import { apiKey } from "../shared/firebase";
-import Permit from "../shared/Permit";
 
 const Header = props => {
     const dispatch = useDispatch();

@@ -1,5 +1,5 @@
 import React from "react";
-import { Grid, Text } from "../elements";
+import { Grid } from "../elements";
 import Card from "../components/Card";
 
 const Notification = props => {

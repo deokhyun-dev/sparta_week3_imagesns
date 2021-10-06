@@ -5,11 +5,12 @@ import React from "react";
 
 import { Grid, Image, Text, Button } from "../elements";
 import { history } from "../redux/configureStore";
+import { useSelector } from "react-redux";
 
 const Post = props => {
     return (
         <React.Fragment>
-            <Grid>
+            <Grid margin="0px 0px 10px 0px">
                 <Grid is_flex padding="16px">
                     <Grid is_flex width="auto">
                         <Image shape="circle" src={props.src} />
