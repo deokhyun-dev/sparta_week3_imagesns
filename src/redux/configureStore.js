@@ -6,6 +6,7 @@ import { connectRouter } from "connected-react-router";
 import User from "./modules/user";
 import Post from "./modules/post";
 import Image from "./modules/image";
+import Comment from "./modules/comment";
 
 // combineReducers()를 사용해서 export한 reducer를 모아 root reducer 만들고
 // 미들웨어 적용해주고
@@ -18,6 +19,7 @@ const rootReducer = combineReducers({
     user: User,
     post: Post,
     image: Image,
+    comment: Comment,
     router: connectRouter(history),
 });
 

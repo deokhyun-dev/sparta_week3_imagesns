@@ -20,8 +20,9 @@ const PostList = props => {
     useEffect(() => {
         // 게시글을 작성하는 시점에 게시글.length는 0이 아니다.
         // 0이 아니니까 새로 갖고 오지 않고 기존 배열에 추가해서 새로운 게시글이 가장 앞에 나오게 한다.
-
-        dispatch(postActions.getPostFB());
+        if (post_list.length < 1) {
+            dispatch(postActions.getPostFB());
+        }
     }, []);
     return (
         <React.Fragment>

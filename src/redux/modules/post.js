@@ -222,6 +222,51 @@ const getPostFB = (start = null, size = 2) => {
                     post_list.push(post);
                 });
 
+                //         let post_list = [];
+
+                //         postDB.get().then(docs => {
+                //             docs.forEach(doc => {
+                //                 let _post = doc.data();
+
+                //                 // JS고수의 방법
+                //                 let post = Object.keys(_post).reduce(
+                //                     (acc, cur) => {
+                //                         if (cur.indexOf("user") !== -1) {
+                //                             return {
+                //                                 ...acc,
+                //                                 user_info: {
+                //                                     ...acc.user_info,
+                //                                     [cur]: _post[cur],
+                //                                 },
+                //                             };
+                //                         }
+
+                //                         return { ...acc, [cur]: _post[cur] };
+                //                     },
+                //                     { id: doc.id, user_info: {} }
+                //                 );
+                //                 // ㄴ z키값들이 배열로 들어감
+
+                //                 // let post = {
+                //                 //     id: doc.id,
+                //                 //     user_info: {
+                //                 //         user_name: _post.user_name,
+                //                 //         user_profile: _post.user_profile,
+                //                 //         user_id: _post.user_id,
+                //                 //     },
+                //                 //     image_url: _post.image_url,
+                //                 //     contents: _post.contents,
+                //                 //     comment_cnt: _post.comment_cnt,
+                //                 //     insert_dt: _post.insert_dt,
+                //                 // };
+                //                 post_list.push(post);
+                //             });
+
+                //             dispatch(setPost(post_list));
+                //         });
+                //     };
+                // };
+
                 // 마지막 하나는 빼줍니다.
                 // 그래야 size대로 리스트가 추가되니까요!
                 // 마지막 데이터는 다음 페이지의 유무를 알려주기 위한 친구일 뿐! 리스트에 들어가지 않아요!
@@ -232,59 +277,60 @@ const getPostFB = (start = null, size = 2) => {
     };
 };
 
-//         let post_list = [];
+const getOnePostFB = id => {
+    return function (dispatch, getState, { history }) {
+        const postDB = firestore.collection("post");
 
-//         postDB.get().then(docs => {
-//             docs.forEach(doc => {
-//                 let _post = doc.data();
+        postDB
+            .doc(id)
+            .get()
+            .then(doc => {
+                let _post = doc.data();
 
-//                 // JS고수의 방법
-//                 let post = Object.keys(_post).reduce(
-//                     (acc, cur) => {
-//                         if (cur.indexOf("user") !== -1) {
-//                             return {
-//                                 ...acc,
-//                                 user_info: {
-//                                     ...acc.user_info,
-//                                     [cur]: _post[cur],
-//                                 },
-//                             };
-//                         }
-
-//                         return { ...acc, [cur]: _post[cur] };
-//                     },
-//                     { id: doc.id, user_info: {} }
-//                 );
-//                 // ㄴ z키값들이 배열로 들어감
-
-//                 // let post = {
-//                 //     id: doc.id,
-//                 //     user_info: {
-//                 //         user_name: _post.user_name,
-//                 //         user_profile: _post.user_profile,
-//                 //         user_id: _post.user_id,
-//                 //     },
-//                 //     image_url: _post.image_url,
-//                 //     contents: _post.contents,
-//                 //     comment_cnt: _post.comment_cnt,
-//                 //     insert_dt: _post.insert_dt,
-//                 // };
-//                 post_list.push(post);
-//             });
-
-//             dispatch(setPost(post_list));
-//         });
-//     };
-// };
+                if (!_post) {
+                    return;
+                }
+                let post = Object.keys(_post).reduce(
+                    (acc, cur) => {
+                        if (cur.indexOf("user_") !== -1) {
+                            return {
+                                ...acc,
+                                user_info: {
+                                    ...acc.user_info,
+                                    [cur]: _post[cur],
+                                },
+                            };
+                        }
+                        return { ...acc, [cur]: _post[cur] };
+                    },
+                    { id: doc.id, user_info: {} }
+                );
+                dispatch(setPost([post], { start: null, next: null, size: 3 }));
+            });
+    };
+};
 
 export default handleActions(
     {
         [SET_POST]: (state, action) =>
             produce(state, draft => {
-                console.log(...action.payload.post_list, "스프레드");
-                console.log(action.payload.post_list, "그냥");
                 draft.list.push(...action.payload.post_list);
-                draft.paging = action.payload.paging;
+
+                // 중복 post가 있다면 제거
+                draft.list = draft.list.reduce((acc, cur) => {
+                    // cur에 postlist값이 하나하나 들어올텐데
+                    // postlist id와 cur id가 같은게 없으면 -1
+                    // -1인 값만 acc에 넣어주기
+                    if (acc.findIndex(a => a.id === cur.id) === -1) {
+                        return [...acc, cur];
+                    } else {
+                        acc[acc.findIndex(a => a.id === cur.id)] = cur;
+                        return acc;
+                    }
+                }, []);
+                if (action.payload.paging) {
+                    draft.paging = action.payload.paging;
+                }
                 // 로딩 끝나면 바꿔줘야지
                 draft.is_loading = false;
             }),
@@ -319,6 +365,7 @@ const actionCreators = {
     getPostFB,
     addPostFB,
     editPostFB,
+    getOnePostFB,
 };
 
 export { actionCreators };

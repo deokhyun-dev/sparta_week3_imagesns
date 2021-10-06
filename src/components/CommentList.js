@@ -1,19 +1,41 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Grid, Image, Text } from "../elements";
 
-const CommentList = () => {
+import { useSelector, useDispatch } from "react-redux";
+import { actionCreators as commentActions } from "../redux/modules/comment";
+
+const CommentList = props => {
+    const dispatch = useDispatch();
+    const { post_id } = props;
+    const comment_list = useSelector(state => state.comment.list);
+
+    console.log(comment_list[post_id], "커맨트디테일");
+
+    // dispatch(commentActions.setCommentFB(id));
+
+    useEffect(() => {
+        if (!comment_list[post_id]) {
+            dispatch(commentActions.setCommentFB(post_id));
+        }
+    }, []);
+
+    if (!comment_list[post_id] || !post_id) {
+        return null;
+    }
+
     return (
         <React.Fragment>
             <Grid padding="16px">
-                <CommentItem />
-                <CommentItem />
-                <CommentItem />
-                <CommentItem />
-                <CommentItem />
-                <CommentItem />
+                {comment_list[post_id].map(c => {
+                    return <CommentItem key={c.id} {...c} />;
+                })}
             </Grid>
         </React.Fragment>
     );
+};
+
+CommentList.defaultProps = {
+    post_id: null,
 };
 
 export default CommentList;
